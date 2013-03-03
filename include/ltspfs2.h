@@ -29,5 +29,27 @@ typedef enum LtspfsOp {
     QUIT
 } LtspfsOp;
 
+typedef struct atomstore {
+    Atom atom;
+    char *name;
+} AtomStore;
+
 char *LTSPFS_OPCODE = "LTSPFS_OPCODE";
 char *LTSPFS_RETVAL = "LTSPFS_RETVAL";
+char *LTSPFS_DATA =   "LTSPFS_DATA";
+char *LTSPFS_MODE =   "LTSPFS_MODE";
+char *LTSPFS_NLINK =  "LTSPFS_NLINK";
+char *LTSPFS_UID =    "LTSPFS_UID";
+char *LTSPFS_GID =    "LTSPFS_GID";
+char *LTSPFS_SIZE =   "LTSPFS_SIZE";
+char *LTSPFS_ATIME =  "LTSPFS_ATIME";
+char *LTSPFS_MTIME =  "LTSPFS_MTIME";
+char *LTSPFS_CTIME =  "LTSPFS_CTIME";
+
+typedef struct infostruct {
+    Display *dpy;
+    Atom windowid;
+    Window window;
+    char *root;
+    struct atom_store **store;
+} InfoStruct;
