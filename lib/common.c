@@ -114,11 +114,11 @@ LTSPFS_PutLong (InfoStruct *is, Atom atom, long *data)
 }
 
 Bool
-LTSPFS_PutString (InfoStruct *is, Atom atom, (char *) data)
+LTSPFS_PutString (InfoStruct *is, Atom atom, long len, char *data)
 {
   if (XChangeProperty (is->dpy, is->win, atom, XA_STRING, 8,
 		       PropModeReplace, (unsigned char *)data,
-		       strlen (data) + 1) != Success)
+		       len) != Success)
     {
       return False;
     }

@@ -85,6 +85,7 @@ main (int argc, char **argv)
       {None, LTSPFS_OPCODE},
       {None, LTSPFS_RETVAL},
       {None, LTSPFS_DATA},
+      {None, LTSPFS_DIRLIST},
       {None, LTSPFS_MODE},
       {None, LTSPFS_NLINK},
       {None, LTSPFS_UID},
