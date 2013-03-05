@@ -49,10 +49,8 @@ char *LTSPFS_ATIME   = "LTSPFS_ATIME";
 char *LTSPFS_MTIME   = "LTSPFS_MTIME";
 char *LTSPFS_CTIME   = "LTSPFS_CTIME";
 
-typedef struct infostruct {
-    Display *dpy;
-    Atom windowid;
-    Window window;
-    char *root;
-    struct atom_store **store;
-} InfoStruct;
+extern Display *dpy;
+extern Atom windowid;
+extern Window window;
+extern char *root;
+extern AtomStore store[];

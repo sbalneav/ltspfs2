@@ -10,8 +10,22 @@
 
 #include <ltspfs2.h>
 
+/*
+ * Global definitions
+ */
+
+Display *dpy;
+Atom windowid;
+Window window;
+char *root;
+AtomStore store[20];
+
+/*
+ * dispatch
+ */
+
 void
-dispatch (InfoStruct *is)
+dispatch (void)
 {
   long opcodeval;
   int retval;
@@ -22,16 +36,16 @@ dispatch (InfoStruct *is)
    * Main loop.
    */
 
-  if ((opcode = LTSPFS_GetAtom (is, LTSPFS_OPCODE)) == False)
+  if ((opcode = LTSPFS_GetAtom (LTSPFS_OPCODE)) == False)
     {
       return;
     }
 
   for (;;)
     {
-      LTSPFS_AtomWait (is, opcode);
+      LTSPFS_AtomWait (opcode);
 
-      if (LTSPFS_GetLong (is, opcode, &opcodeval) == False)
+      if (LTSPFS_GetLong (opcode, &opcodeval) == False)
 	{
 	  return;
 	}
@@ -39,10 +53,10 @@ dispatch (InfoStruct *is)
       switch (opcodeval)
 	{
 	  case GETATTR:
-	       result = LTSPFS_getattr (is, &retval);
+	       result = LTSPFS_getattr (&retval);
 	       break;
 	  case READDIR:
-	       result = LTSPFS_readdir (is, &retval);
+	       result = LTSPFS_readdir (&retval);
 	       break;
 	  case READLINK:
 	  case MKNOD:
@@ -80,60 +94,42 @@ dispatch (InfoStruct *is)
 	  exit (1);
 	}
 
-      LTSPFS_PutLong (is, (long) retval);
+      LTSPFS_PutLong ((long) retval);
     }
 }
 
 int
 main (int argc, char **argv)
 {
-  InfoStruct is;
   int screen;
-  AtomStore *store[] =
-    {
-      {None, LTSPFS_OPCODE},
-      {None, LTSPFS_RETVAL},
-      {None, LTSPFS_DATA},
-      {None, LTSPFS_DIRLIST},
-      {None, LTSPFS_MODE},
-      {None, LTSPFS_NLINK},
-      {None, LTSPFS_UID},
-      {None, LTSPFS_GID},
-      {None, LTSPFS_SIZE},
-      {None, LTSPFS_ATIME},
-      {None, LTSPFS_MTIME},
-      {None, LTSPFS_CTIME},
-      {None, NULL}
-    };
 
-  is.dpy = XOpenDisplay (NULL);
-  screen = DefaultScreen (is.dpy);
-  is.store = store;
-  is.root = argv[1];
+  dpy = XOpenDisplay (NULL);
+  screen = DefaultScreen (dpy);
+  root = argv[1];
 
   /*
    * Create our window we operate on
    */
 
-  is.window = XCreateSimpleWindow (is.dpy, XRootWindow (is.dpy, screen),
+  window = XCreateSimpleWindow (dpy, XRootWindow (dpy, screen),
 			           0, 0, 0, 0, 0, 0, 0);
 
   /*
    * Set the window name so client can find it.
    */
 
-  XChangeProperty(is.dpy, is.window,
-		  XInternAtom (is.dpy, "_NET_WM_NAME", False),
+  XChangeProperty(dpy, window,
+		  XInternAtom (dpy, "_NET_WM_NAME", False),
 		  XA_STRING,
 	          8, PropModeReplace, (unsigned char *) "LTSPFS2_WINDOW", 14);
 
-  LTSPFS_InitAtoms (&is);
+  LTSPFS_InitAtoms ();
 
   /*
    * Ready.  Dispatch based on opcode.
    */
 
-  dispatch (&is);
+  dispatch ();
 
   /*
    * We've returned from dispatch.  Exit.

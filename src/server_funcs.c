@@ -27,24 +27,24 @@
  */
 
 Bool
-mkpath (InfoStruct *is, char *patharg, char **pathptr)
+mkpath (char *patharg, char **pathptr)
 {
   char *fusepath;
   size_t lenroot;
   size_t lenfuse;
   Atom pathatom;
 
-  if ((pathatom = LTSPFS_GetAtom (is, patharg)) == False)
+  if ((pathatom = LTSPFS_GetAtom (patharg)) == False)
     {
       return False;
     }
 
-  if (LTSPFS_GetString (is, pathatom, &fusepath) != True)
+  if (LTSPFS_GetString (pathatom, &fusepath) != True)
     {
       return False;
     }
 
-  lenroot = strlen (is->root);
+  lenroot = strlen (root);
   lenfuse = strlen (fusepath);
 
   if ((*pathptr = malloc (lenroot + lenfuse + 1)) == NULL)
@@ -52,7 +52,7 @@ mkpath (InfoStruct *is, char *patharg, char **pathptr)
       return False;
     }
 
-  sprintf (*pathptr, "%s/%s", is->root, fusepath);
+  sprintf (*pathptr, "%s/%s", root, fusepath);
 
   free (fusepath);
 
@@ -64,13 +64,13 @@ mkpath (InfoStruct *is, char *patharg, char **pathptr)
  */
 
 Bool
-LTSPFS_getattr (InfoStruct *is, long *retval)
+LTSPFS_getattr (long *retval)
 {
   char *path;
   struct stat statbuf;
   int ret;
 
-  if (mkpath (is, LTSPFS_PATH1, &path) == False)
+  if (mkpath (LTSPFS_PATH1, &path) == False)
     {
       return False;
     }
@@ -81,7 +81,7 @@ LTSPFS_getattr (InfoStruct *is, long *retval)
       return True;
     }
 
-  if (LTSPFS_StoreStatBuf (is, &statbuf) == False)
+  if (LTSPFS_StoreStatBuf (&statbuf) == False)
     {
       return False;
     }
@@ -97,7 +97,7 @@ LTSPFS_getattr (InfoStruct *is, long *retval)
  */
 
 Bool
-LTSPFS_readdir (InfoStruct *is, long *retval)
+LTSPFS_readdir (long *retval)
 {
   char *path;
   char *dirnames = NULL;
@@ -108,7 +108,7 @@ LTSPFS_readdir (InfoStruct *is, long *retval)
   struct dirent *dire;
   Atom diratom;
 
-  if (mkpath (is, LTSPFS_PATH1, &path) == False)
+  if (mkpath (LTSPFS_PATH1, &path) == False)
     {
       return False;
     }
@@ -158,12 +158,12 @@ LTSPFS_readdir (InfoStruct *is, long *retval)
    * the total length of the buffer.
    */
 
-  if ((diratom = LTSPFS_GetAtom (is, LTSPFS_DIRLIST)) == None)
+  if ((diratom = LTSPFS_GetAtom (LTSPFS_DIRLIST)) == None)
     {
       return False;
     }
 
-  if ((LTSPFS_PutString (is, diratom, total, dirnames)) == False)
+  if ((LTSPFS_PutString (diratom, total, dirnames)) == False)
     {
       return False;
     }

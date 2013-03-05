@@ -16,7 +16,7 @@
 #include <ltspfs2.h>
 
 Bool
-LTSPFS_AtomWait (InfoStruct *is, Atom atom)
+LTSPFS_AtomWait (Atom atom)
 {
   XEvent ev;
 
@@ -24,11 +24,11 @@ LTSPFS_AtomWait (InfoStruct *is, Atom atom)
    * Declare our interest in obtaining PropertyChange events.
    */
 
-  XSelectInput (is->dpy, is->win, PropertyChangeMask);
+  XSelectInput (dpy, window, PropertyChangeMask);
 
   for (;;)
     {
-      XNextEvent (is->dpy, &ev);
+      XNextEvent (dpy, &ev);
       if (ev.type == PropertyNotify)
 	{
           if (ev.xproperty.atom == atom)
@@ -40,7 +40,7 @@ LTSPFS_AtomWait (InfoStruct *is, Atom atom)
 }
 
 Bool
-LTSPFS_GetLong (InfoStruct *is, Atom atom, long *result)
+LTSPFS_GetLong (Atom atom, long *result)
 {
   long *property = NULL;
   Atom type;
@@ -48,7 +48,7 @@ LTSPFS_GetLong (InfoStruct *is, Atom atom, long *result)
   unsigned long nitems, nleft;
   Bool retval;
 
-  res = XGetWindowProperty(is->dpy, is->win, atom, 0, 1, 0, XA_INTEGER,
+  res = XGetWindowProperty(dpy, window, atom, 0, 1, 0, XA_INTEGER,
                            &type, &format, &nitems, &nleft,
 			   (unsigned char **) &property);
 
@@ -71,7 +71,7 @@ LTSPFS_GetLong (InfoStruct *is, Atom atom, long *result)
 }
 
 Bool
-LTSPFS_GetString (InfoStruct *is, Atom atom, long len, char **result)
+LTSPFS_GetString (Atom atom, long len, char **result)
 {
   char *property;
   Atom type;
@@ -79,7 +79,7 @@ LTSPFS_GetString (InfoStruct *is, Atom atom, long len, char **result)
   unsigned long nitems, nleft;
   Bool retval;
 
-  res = XGetWindowProperty(is->dpy, is->win, atom, 0, len, 0, XA_STRING,
+  res = XGetWindowProperty(dpy, window, atom, 0, len, 0, XA_STRING,
                            &type, &format, &nitems, &nleft,
    		           (unsigned char **) &property);
 
@@ -102,10 +102,10 @@ LTSPFS_GetString (InfoStruct *is, Atom atom, long len, char **result)
 }
 
 Bool
-LTSPFS_PutLong (InfoStruct *is, Atom atom, long *data)
+LTSPFS_PutLong (Atom atom, long data)
 {
-  if (XChangeProperty (is->dpy, is->win, atom, XA_INTEGER, 32,
-		       PropModeReplace, (unsigned char *)data, 1) != Success)
+  if (XChangeProperty (dpy, window, atom, XA_INTEGER, 32,
+		       PropModeReplace, (unsigned char *)&data, 1) != Success)
     {
       return False;
     }
@@ -116,9 +116,9 @@ LTSPFS_PutLong (InfoStruct *is, Atom atom, long *data)
 }
 
 Bool
-LTSPFS_PutString (InfoStruct *is, Atom atom, long len, char *data)
+LTSPFS_PutString (Atom atom, long len, char *data)
 {
-  if (XChangeProperty (is->dpy, is->win, atom, XA_STRING, 8,
+  if (XChangeProperty (dpy, window, atom, XA_STRING, 8,
 		       PropModeReplace, (unsigned char *)data,
 		       len) != Success)
     {
@@ -131,10 +131,25 @@ LTSPFS_PutString (InfoStruct *is, Atom atom, long len, char *data)
 }
 
 Bool
-LTSPFS_InitAtoms (InfoStruct *is, Bool only_if_exists)
+LTSPFS_InitAtoms (Bool only_if_exists)
 {
   int i;
-  AtomStore **store = is->store;
+
+  i = 0;
+
+  store[i].atom = None; store[i].name = LTSPFS_OPCODE; i++;
+  store[i].atom = None; store[i].name = LTSPFS_RETVAL; i++;
+  store[i].atom = None; store[i].name = LTSPFS_DATA; i++;
+  store[i].atom = None; store[i].name = LTSPFS_DIRLIST; i++;
+  store[i].atom = None; store[i].name = LTSPFS_MODE; i++;
+  store[i].atom = None; store[i].name = LTSPFS_NLINK; i++;
+  store[i].atom = None; store[i].name = LTSPFS_UID; i++;
+  store[i].atom = None; store[i].name = LTSPFS_GID; i++;
+  store[i].atom = None; store[i].name = LTSPFS_SIZE; i++;
+  store[i].atom = None; store[i].name = LTSPFS_ATIME; i++;
+  store[i].atom = None; store[i].name = LTSPFS_MTIME; i++;
+  store[i].atom = None; store[i].name = LTSPFS_CTIME; i++;
+  store[i].atom = None; store[i].name = NULL; i++;
 
   for (i = 0; store[i].name != NULL; i++)
     {
@@ -149,10 +164,10 @@ LTSPFS_InitAtoms (InfoStruct *is, Bool only_if_exists)
 }
 
 Atom
-LTSPFS_GetAtom (InfoStruct *is, char *name)
+LTSPFS_GetAtom (char *name)
 {
   int i;
-  AtomStore **store = is->store;
+  AtomStore **store = &store;
 
   for (i = 0; store[i]->name != NULL; i++)
     {
@@ -166,7 +181,7 @@ LTSPFS_GetAtom (InfoStruct *is, char *name)
 }
 
 Bool
-LTSPFS_StoreStatBuf (InfoStruct *is, struct stat *st)
+LTSPFS_StoreStatBuf (struct stat *st)
 {
   Atom tmp;
 
@@ -252,87 +267,98 @@ LTSPFS_StoreStatBuf (InfoStruct *is, struct stat *st)
 }
 
 Bool
-LTSPFS_GetStatBuf (InfoStruct *is, struct stat *st)
+LTSPFS_GetStatBuf (struct stat *st)
 {
   Atom tmp;
+  long tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_MODE)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_mode) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_mode = (mode_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_NLINK)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_nlink) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_nlink = (nlink_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_UID)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_uid) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_uid = (uid_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_GID)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_gid) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_gid = (gid_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_SIZE)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_size) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_size = (off_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_ATIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_atime) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_atime = (time_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_MTIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_mtime) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_mtime = (time_t) tmplong;
 
   if ((tmp = LTSPFS_GetAtom (is, LTSPFS_CTIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, (long) st->st_ctime) != True)
+  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
     {
       return False;
     }
+  st->st_ctime = (time_t) tmplong;
+
+  return True;
 }
