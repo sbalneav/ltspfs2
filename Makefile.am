@@ -1,4 +1,4 @@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = lib server
+SUBDIRS = src
 
 EXTRA_DIST = autogen.sh

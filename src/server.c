@@ -8,7 +8,7 @@
 #include <X11/Xresource.h>
 #include <X11/Xlib.h>
 
-#include "ltspfs2.h"
+#include <ltspfs2.h>
 
 void
 dispatch (InfoStruct *is)
@@ -16,16 +16,25 @@ dispatch (InfoStruct *is)
   long opcodeval;
   int retval;
   Bool result;
+  Atom opcode;
 
   /*
    * Main loop.
    */
 
+  if ((opcode = LTSPFS_GetAtom (is, LTSPFS_OPCODE)) == False)
+    {
+      return;
+    }
+
   for (;;)
     {
-      LTSPFS_AtomWait (is, LTSPFS_OPCODE);
+      LTSPFS_AtomWait (is, opcode);
 
-      if (LTSPFS_GetLong (is, LTSPFS_OPCODE, opcodeval);
+      if (LTSPFS_GetLong (is, opcode, &opcodeval) == False)
+	{
+	  return;
+	}
 
       switch (opcodeval)
 	{
@@ -95,10 +104,10 @@ main (int argc, char **argv)
       {None, LTSPFS_MTIME},
       {None, LTSPFS_CTIME},
       {None, NULL}
-    }
+    };
 
   is.dpy = XOpenDisplay (NULL);
-  screen = DefaultScreen(display);
+  screen = DefaultScreen (is.dpy);
   is.store = store;
   is.root = argv[1];
 
@@ -106,7 +115,7 @@ main (int argc, char **argv)
    * Create our window we operate on
    */
 
-  is.window = XCreateSimpleWindow (display, XRootWindow (is.dpy, screen),
+  is.window = XCreateSimpleWindow (is.dpy, XRootWindow (is.dpy, screen),
 			           0, 0, 0, 0, 0, 0, 0);
 
   /*
@@ -124,7 +133,7 @@ main (int argc, char **argv)
    * Ready.  Dispatch based on opcode.
    */
 
-  dispatch (is);
+  dispatch (&is);
 
   /*
    * We've returned from dispatch.  Exit.

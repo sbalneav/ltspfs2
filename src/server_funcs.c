@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xproto.h>
@@ -8,7 +13,7 @@
 #include <X11/Xresource.h>
 #include <X11/Xlib.h>
 
-#include "ltspfs2.h"
+#include <ltspfs2.h>
 
 /*
  * The general flow for the functions is:
@@ -22,16 +27,32 @@
  */
 
 Bool
-mkpath (InfoStruct *is, char *patharg, char *pathbuf)
+mkpath (InfoStruct *is, char *patharg, char **pathptr)
 {
   char *fusepath;
+  size_t lenroot;
+  size_t lenfuse;
+  Atom pathatom;
 
-  if (LTSPFS_GetString (is, patharg, &fusepath) != True)
+  if ((pathatom = LTSPFS_GetAtom (is, patharg)) == False)
     {
       return False;
     }
 
-  snprintf (path, PATH_MAX, "%s/%s", is->root, fusepath);
+  if (LTSPFS_GetString (is, pathatom, &fusepath) != True)
+    {
+      return False;
+    }
+
+  lenroot = strlen (is->root);
+  lenfuse = strlen (fusepath);
+
+  if ((*pathptr = malloc (lenroot + lenfuse + 1)) == NULL)
+    {
+      return False;
+    }
+
+  sprintf (*pathptr, "%s/%s", is->root, fusepath);
 
   free (fusepath);
 
@@ -45,11 +66,11 @@ mkpath (InfoStruct *is, char *patharg, char *pathbuf)
 Bool
 LTSPFS_getattr (InfoStruct *is, long *retval)
 {
-  char path[PATH_MAX];
+  char *path;
   struct stat statbuf;
   int ret;
 
-  if (mkpath (is, LTSPFS_PATH1, path) == False)
+  if (mkpath (is, LTSPFS_PATH1, &path) == False)
     {
       return False;
     }
@@ -60,11 +81,12 @@ LTSPFS_getattr (InfoStruct *is, long *retval)
       return True;
     }
 
-  if (LTSPFS_StoreStatBuf (is, &st) == False)
+  if (LTSPFS_StoreStatBuf (is, &statbuf) == False)
     {
       return False;
     }
 
+  free (path);
   *retval = (long) ret;
 
   return True;
@@ -77,7 +99,7 @@ LTSPFS_getattr (InfoStruct *is, long *retval)
 Bool
 LTSPFS_readdir (InfoStruct *is, long *retval)
 {
-  char path[PATH_MAX];
+  char *path;
   char *dirnames = NULL;
   char *last = dirnames;
   long total = 0;
@@ -86,7 +108,7 @@ LTSPFS_readdir (InfoStruct *is, long *retval)
   struct dirent *dire;
   Atom diratom;
 
-  if (mkpath (is, LTSPFS_PATH1, path) != True)
+  if (mkpath (is, LTSPFS_PATH1, &path) == False)
     {
       return False;
     }
@@ -146,6 +168,8 @@ LTSPFS_readdir (InfoStruct *is, long *retval)
       return False;
     }
 
+  free (path);
+  free (dirnames);
   *retval = 0;
 
   return True;
