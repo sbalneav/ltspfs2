@@ -49,7 +49,7 @@ LTSPFS_getattr (InfoStruct *is, long *retval)
   struct stat statbuf;
   int ret;
 
-  if (mkpath (is, LTSPFS_PATH1, path) != True)
+  if (mkpath (is, LTSPFS_PATH1, path) == False)
     {
       return False;
     }
@@ -60,7 +60,7 @@ LTSPFS_getattr (InfoStruct *is, long *retval)
       return True;
     }
 
-  if (LTSPFS_StoreStatBuf (is, &st) != True)
+  if (LTSPFS_StoreStatBuf (is, &st) == False)
     {
       return False;
     }
@@ -84,6 +84,7 @@ LTSPFS_readdir (InfoStruct *is, long *retval)
   int ret;
   DIR *de;
   struct dirent *dire;
+  Atom diratom;
 
   if (mkpath (is, LTSPFS_PATH1, path) != True)
     {
@@ -135,10 +136,17 @@ LTSPFS_readdir (InfoStruct *is, long *retval)
    * the total length of the buffer.
    */
 
-  LTSPFS_PutString (is, 
+  if ((diratom = LTSPFS_GetAtom (is, LTSPFS_DIRLIST)) == None)
+    {
+      return False;
+    }
 
+  if ((LTSPFS_PutString (is, diratom, total, dirnames)) == False)
+    {
+      return False;
+    }
 
-
+  *retval = 0;
 
   return True;
 }
