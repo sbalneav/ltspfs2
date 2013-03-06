@@ -167,13 +167,12 @@ Atom
 LTSPFS_GetAtom (char *name)
 {
   int i;
-  AtomStore **store = &store;
 
-  for (i = 0; store[i]->name != NULL; i++)
+  for (i = 0; store[i].name != NULL; i++)
     {
-      if (strcmp (store[i]->name, name) == 0)
+      if (strcmp (store[i].name, name) == 0)
 	{
-	  return store[i]->atom;
+	  return store[i].atom;
 	}
     }
 
@@ -185,82 +184,82 @@ LTSPFS_StoreStatBuf (struct stat *st)
 {
   Atom tmp;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_MODE)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_MODE)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_mode) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_mode) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_NLINK)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_NLINK)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_nlink) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_nlink) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_UID)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_UID)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_uid) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_uid) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_GID)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_GID)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_gid) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_gid) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_SIZE)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_SIZE)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_size) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_size) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_ATIME)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_ATIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_atime) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_atime) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_MTIME)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_MTIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_mtime) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_mtime) != True)
     {
       return False;
     }
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_CTIME)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_CTIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_PutLong (is, tmp, (long) st->st_ctime) != True)
+  if (LTSPFS_PutLong (tmp, (long) st->st_ctime) != True)
     {
       return False;
     }
@@ -272,89 +271,89 @@ LTSPFS_GetStatBuf (struct stat *st)
   Atom tmp;
   long tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_MODE)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_MODE)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_mode = (mode_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_NLINK)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_NLINK)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_nlink = (nlink_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_UID)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_UID)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_uid = (uid_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_GID)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_GID)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_gid = (gid_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_SIZE)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_SIZE)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_size = (off_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_ATIME)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_ATIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_atime = (time_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_MTIME)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_MTIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }
   st->st_mtime = (time_t) tmplong;
 
-  if ((tmp = LTSPFS_GetAtom (is, LTSPFS_CTIME)) == None)
+  if ((tmp = LTSPFS_GetAtom (LTSPFS_CTIME)) == None)
     {
       return False;
     }
 
-  if (LTSPFS_GetLong (is, tmp, &tmplong) != True)
+  if (LTSPFS_GetLong (tmp, &tmplong) != True)
     {
       return False;
     }

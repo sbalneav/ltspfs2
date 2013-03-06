@@ -36,7 +36,7 @@ dispatch (void)
    * Main loop.
    */
 
-  if ((opcode = LTSPFS_GetAtom (LTSPFS_OPCODE)) == False)
+  if ((opcode = LTSPFS_GetAtom (LTSPFS_OPCODE)) == None)
     {
       return;
     }
@@ -112,7 +112,8 @@ main (int argc, char **argv)
    */
 
   window = XCreateSimpleWindow (dpy, XRootWindow (dpy, screen),
-			           0, 0, 0, 0, 0, 0, 0);
+			           1, 1, 1, 1, 1,
+				   BlackPixel (dpy, 0), BlackPixel(dpy, 0));
 
   /*
    * Set the window name so client can find it.
@@ -123,6 +124,7 @@ main (int argc, char **argv)
 		  XA_STRING,
 	          8, PropModeReplace, (unsigned char *) "LTSPFS2_WINDOW", 14);
 
+  printf ("After _net_wm_name");
   LTSPFS_InitAtoms ();
 
   /*

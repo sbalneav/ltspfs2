@@ -34,7 +34,7 @@ mkpath (char *patharg, char **pathptr)
   size_t lenfuse;
   Atom pathatom;
 
-  if ((pathatom = LTSPFS_GetAtom (patharg)) == False)
+  if ((pathatom = LTSPFS_GetAtom (patharg)) == None)
     {
       return False;
     }
